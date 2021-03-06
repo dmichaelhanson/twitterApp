@@ -5,7 +5,6 @@
 //  Created by Mike Hanson on 3/5/21.
 //  Copyright © 2021 Dan. All rights reserved.
 //
-
 import UIKit
 
 class HomeTableViewController: UITableViewController {
@@ -13,9 +12,11 @@ class HomeTableViewController: UITableViewController {
     var tweetArray = [NSDictionary]()
     var numberOfTweet: Int!
     
-    func loadTweet(){
+    let myRefreshControl = UIRefreshControl()
+    
+    @objc func loadTweet(){
         let myUrl = "https://api.twitter.com/1.1/statuses/home_timeline.json"
-        let myParams = ["count": 10]
+        let myParams = ["count": 20]
         
         TwitterAPICaller.client?.getDictionariesRequest(url: myUrl, parameters: myParams, success: { (tweets: [NSDictionary]) in
             
@@ -25,6 +26,8 @@ class HomeTableViewController: UITableViewController {
             }
             
             self.tableView.reloadData()
+            self.myRefreshControl.endRefreshing()
+            
         }, failure: { (Error) in
             print("Could not retrieve tweets! Oh Noz!!")
         })
@@ -33,6 +36,8 @@ class HomeTableViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         loadTweet()
+        myRefreshControl.addTarget(self, action: #selector(loadTweet), for: .valueChanged)
+        tableView.refreshControl = myRefreshControl
     }
 
     @IBAction func onLogout(_ sender: Any) {
@@ -59,7 +64,6 @@ class HomeTableViewController: UITableViewController {
     }
     
     // MARK: - Table view data source
-
     override func numberOfSections(in tableView: UITableView) -> Int {
         // #warning Incomplete implementation, return the number of sections
         return 1
